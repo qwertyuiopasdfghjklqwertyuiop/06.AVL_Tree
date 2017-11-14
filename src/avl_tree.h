@@ -82,6 +82,7 @@ public:
   Node *root() {
     return root_.get();
   }
+  std::unique_ptr<Node>* rootTest() { return &this->root_; }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   void print() { print( this->root() , 0 ); }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -92,38 +93,69 @@ private:
     print( current->right(), indent_level + 1 );
     for(int k = 0; k < indent_level; k++)
       std::cout << "    ";
-    std::cout << "{ " << current->key_ <<  "," << current->value_ << "," << current->height() << " }" << std::endl;
+    //std::cout << "{ " << current->key_ <<  "," << current->value_ << "," << current->height() << " }" << std::endl;
+    std::cout << "{ " << current->value_ << "," << current->height() << " }" << std::endl;
+
     print( current->left() , indent_level + 1 ); 
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+public:
   void balance(std::unique_ptr<Node>* current) {
     Node* nodes[3];
     Node* branches[4];
     if( current->get()->left()->height() - current->get()->right()->height() == 2 )   //Left
     {
       if( current->get()->left()->left()->height() - current->get()->left()->right()->height() == 1 ) {   //Left-Left
+        branches[0] = current->get()->left()->left()->left_.release();
+        branches[1] = current->get()->left()->left()->right_.release();
+        branches[2] = current->get()->left()->right_.release();
+        branches[3] = current->get()->right_.release();
+        nodes[0] = current->get()->left()->left_.release();
+        nodes[1] = current->get()->left_.release();
+        nodes[2] = current->release();
       }
       else if( current->get()->left()->left()->height() - current->get()->left()->right()->height() == -1 ) { //Left-Right
+        branches[0] = current->get()->left()->left_.release();
+        branches[1] = current->get()->left()->right()->left_.release();
+        branches[2] = current->get()->left()->right()->right_.release();
+        branches[3] = current->get()->right_.release();
+        nodes[1] = current->get()->left()->right_.release();
+        nodes[0] = current->get()->left_.release();
+        nodes[2] = current->release();
       }
-      else { std::cerr << "WTF!?: Left case but not left-left or left-right." << std::endl; exit(1);
+      else { std::cerr << "WTF!?: Left case but not left-left or left-right." << std::endl; exit(1); }
     }
     else if( current->get()->left()->height() - current->get()->right()->height() == -2 )  //Right
     {
       if( current->get()->right()->left()->height() - current->get()->right()->right()->height() == -1 ) {  //Right-Right
+        branches[0] = current->get()->left_.release();
+        branches[1] = current->get()->right()->left_.release();
+        branches[2] = current->get()->right()->right()->left_.release();
+        branches[3] = current->get()->right()->right()->right_.release();
+        nodes[2] = current->get()->right()->right_.release();
+        nodes[1] = current->get()->right_.release();
+        nodes[0] = current->release();
       }
       else if( current->get()->right()->left()->height() - current->get()->right()->right()->height() == 1 ) {  //Right-Left
+        branches[0] = current->get()->left_.release();
+        branches[1] = current->get()->right()->left()->left_.release();
+        branches[2] = current->get()->right()->left()->right_.release();
+        branches[3] = current->get()->right()->right_.release();
+        nodes[1] = current->get()->right()->left_.release();
+        nodes[2] = current->get()->right_.release();
+        nodes[0] = current->release();
       }
-      else { std::cerr << "WTF!?: Right case but not right-right or right-left." << std::endl; exit(2);
+      else { std::cerr << "WTF!?: Right case but not right-right or right-left." << std::endl; exit(2); }
     }
-    else return; // doesn't need to be balanced
+    else return; // doesn't need to be balanced or it's child should be balanced first
 
     // Reconnect
     nodes[0]->left_.reset( branches[0] );
-    nodes[0]->left_.reset( branches[1] );
+    nodes[0]->right_.reset( branches[1] );
     nodes[2]->left_.reset( branches[2] );
-    nodes[2]->left_.reset( branches[3] );
+    nodes[2]->right_.reset( branches[3] );
     nodes[1]->left_.reset( nodes[0] );
-    nodes[1]->left_.reset( nodes[2] );
+    nodes[1]->right_.reset( nodes[2] );
     current->reset( nodes[1] );
     //Recalculate from bottom to top
     nodes[0]->recalc_height();
