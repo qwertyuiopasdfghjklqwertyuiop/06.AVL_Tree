@@ -2,6 +2,7 @@
 #define _AVL_TREE_H
 
 #include <memory>
+#include <stack>
 
 template <typename Key, typename Value=Key>
 class AVLTree {
@@ -33,7 +34,10 @@ public:
       if(this == NULL) return -1;
       return height_;
     }
-
+  private:
+    void recalc_height() {
+      this->height_ = 1 + std::max( this->left()->height() , this->right()->height() );
+    }
     friend class AVLTree<Key, Value>;
   };
 //==========================================================================================
@@ -47,8 +51,9 @@ public:
   // TODO: Add code to update node heights and do rebalancing...
   
   
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   Value& operator[](const Key& key) {
-    std::stack< std::unique_ptr<Node> > prev_parents;
+    std::stack< std::unique_ptr<Node>* > prev_parents;
     // Try to find the node with the value we want:
     std::unique_ptr<Node> *cur;
     for (cur = &root_;
@@ -64,36 +69,47 @@ public:
     cur->reset(new Node(key));
     ++size_;
     while( !prev_parents.empty() ){
-      prev_parents->top()->get()->NAME_OF_RECALC_HEIGHT_FUNCTION(); // TODO $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-      prev_parents->pop();
+      prev_parents.top()->get()->recalc_height();
+      prev_parents.pop();
     }
     return (*cur)->value_;
   }
-
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   int size() {
     return size_;
   }
-
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   Node *root() {
     return root_.get();
   }
-
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  void print() { print( this->root() , 0 ); }
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 private:
-   void balance(std::unique_ptr<Node>* current) {
-      Node* nodes[3];
-      Node* branches[4];
+  void print( Node* current, int indent_level ) {
+    if( current == NULL ) return;
 
-      if( current->get()->left_->get()->value() - current->get()->right_->get()->value() == 2 )
-      {
+    print( current->right(), indent_level + 1 );
+    for(int k = 0; k < indent_level; k++)
+      std::cout << "    ";
+    std::cout << "{ " << current->key_ <<  "," << current->value_ << "," << current->height() << " }" << std::endl;
+    print( current->left() , indent_level + 1 ); 
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  void balance(std::unique_ptr<Node>* current) {
+    Node* nodes[3];
+    Node* branches[4];
+     if( current->get()->left_->get()->value() - current->get()->right_->get()->value() == 2 )
+     {
+     }
+     else if( current->get()->left_->get()->value() - current->get()->right_->get()->value() == -2 )
+     {
 
-      }
-      else if( current->get()->left_->get()->value() - current->get()->right_->get()->value() == -2 )
-      {
+     }
+     else return; // doesn't need to be balanced
 
-      }
-      else return; // doesn't need to be balanced
-
-   }
+  }
 };
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 #endif
