@@ -99,15 +99,38 @@ private:
   void balance(std::unique_ptr<Node>* current) {
     Node* nodes[3];
     Node* branches[4];
-     if( current->get()->left_->get()->value() - current->get()->right_->get()->value() == 2 )
-     {
-     }
-     else if( current->get()->left_->get()->value() - current->get()->right_->get()->value() == -2 )
-     {
+    if( current->get()->left()->height() - current->get()->right()->height() == 2 )   //Left
+    {
+      if( current->get()->left()->left()->height() - current->get()->left()->right()->height() == 1 ) {   //Left-Left
+      }
+      else if( current->get()->left()->left()->height() - current->get()->left()->right()->height() == -1 ) { //Left-Right
+      }
+      else { std::cerr << "WTF!?: Left case but not left-left or left-right." << std::endl; exit(1);
+    }
+    else if( current->get()->left()->height() - current->get()->right()->height() == -2 )  //Right
+    {
+      if( current->get()->right()->left()->height() - current->get()->right()->right()->height() == -1 ) {  //Right-Right
+      }
+      else if( current->get()->right()->left()->height() - current->get()->right()->right()->height() == 1 ) {  //Right-Left
+      }
+      else { std::cerr << "WTF!?: Right case but not right-right or right-left." << std::endl; exit(2);
+    }
+    else return; // doesn't need to be balanced
 
-     }
-     else return; // doesn't need to be balanced
+    // Reconnect
+    nodes[0]->left_.reset( branches[0] );
+    nodes[0]->left_.reset( branches[1] );
+    nodes[2]->left_.reset( branches[2] );
+    nodes[2]->left_.reset( branches[3] );
+    nodes[1]->left_.reset( nodes[0] );
+    nodes[1]->left_.reset( nodes[2] );
+    current->reset( nodes[1] );
+    //Recalculate from bottom to top
+    nodes[0]->recalc_height();
+    nodes[2]->recalc_height();
+    nodes[1]->recalc_height();
 
+    // TODO: Add Documentation for wtf is going on here
   }
 };
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
