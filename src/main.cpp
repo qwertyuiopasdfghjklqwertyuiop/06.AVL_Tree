@@ -18,9 +18,9 @@ int main() {
   left_left[5.5] = "D";
   left_left.print();
 
-  left_left.balance(left_left.rootTest());
-  cout << endl << endl << endl << endl << endl; 
-  left_left.print();
+//  AVLTree<double,std::string>::Node::balance(left_left.rootTest());
+//  cout << endl << endl << endl << endl << endl; 
+//  left_left.print();
   cout << endl << endl << endl << endl << endl; 
 
   cout << "======================== TESTING LEFT-RIGHT BALANCE ========================\n\n\n";
@@ -35,9 +35,9 @@ int main() {
   left_right[5.5] = "D";
   left_right.print();
 
-  left_right.balance(left_right.rootTest());
-  cout << endl << endl << endl << endl << endl; 
-  left_right.print();
+//  AVLTree<double,std::string>::Node::balance(left_right.rootTest());
+//  cout << endl << endl << endl << endl << endl; 
+//  left_right.print();
   cout << endl << endl << endl << endl << endl; 
 
   cout << "======================== TESTING RIGHT-RIGHT BALANCE ========================\n\n\n";
@@ -52,9 +52,9 @@ int main() {
   right_right[5.5] = "D";
   right_right.print();
 
-  right_right.balance(right_right.rootTest());
-  cout << endl << endl << endl << endl << endl; 
-  right_right.print();
+//  AVLTree<double,std::string>::Node::balance(right_right.rootTest());
+//  cout << endl << endl << endl << endl << endl; 
+//  right_right.print();
   cout << endl << endl << endl << endl << endl; 
 
   cout << "======================== TESTING RIGHT-LEFT BALANCE ========================\n\n\n";
@@ -69,9 +69,9 @@ int main() {
   right_left[5.5] = "D";
   right_left.print();
 
-  right_left.balance(right_left.rootTest());
-  cout << endl << endl << endl << endl << endl; 
-  right_left.print(); 
+//  AVLTree<double,std::string>::Node::balance(right_left.rootTest());
+//  cout << endl << endl << endl << endl << endl; 
+//  right_left.print(); 
   cout << endl << endl << endl << endl << endl; 
 
 
