@@ -33,25 +33,30 @@ public:
       return value_;
     }
     const int height() const {
-      if(this == NULL) return -1;
       return this->height_;
+    }
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    static int height_helper(Node* node) {
+// I had to make a helper for height because clang was whining about me checking for this==NULL
+      if(!node) return -1;
+      return node->height_;
     }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   private:
     void recalc_height() {
-      this->height_ = 1 + std::max( this->left()->height() , this->right()->height() );
+      this->height_ = 1 + std::max( height_helper(this->left()) , height_helper(this->right()) );
     }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     static bool balance( std::unique_ptr<Node>* current ) {
       /* arrays for node and branches go from least to greatest. eg: *nodes[0] < *nodes[1] < *nodes[2]
           Values are assigned in one of the 4 blocks of code or cases below.  They are then reattached
-          and the height_ values are updated. */
+          and the height_ values are updated.  Parent height is updated outside this function.      */
 
       Node* nodes[3];
       Node* branches[4];
-      if( current->get()->left()->height() - current->get()->right()->height() == 2 )   //Left
+      if( height_helper(current->get()->left()) - height_helper(current->get()->right()) == 2 )   //Left
       {
-        if( current->get()->left()->left()->height() - current->get()->left()->right()->height() == 1 ) {   //Left-Left
+        if( height_helper( current->get()->left()->left() ) - height_helper( current->get()->left()->right() ) == 1 ) {   //Left-Left
           branches[0] = current->get()->left()->left()->left_.release();
           branches[1] = current->get()->left()->left()->right_.release();
           branches[2] = current->get()->left()->right_.release();
@@ -60,7 +65,7 @@ public:
           nodes[1] = current->get()->left_.release();
           nodes[2] = current->release();
         }
-        else if( current->get()->left()->left()->height() - current->get()->left()->right()->height() == -1 ) { //Left-Right
+        else if( height_helper( current->get()->left()->left() ) - height_helper( current->get()->left()->right() ) == -1 ) { //Left-Right
           branches[0] = current->get()->left()->left_.release();
           branches[1] = current->get()->left()->right()->left_.release();
           branches[2] = current->get()->left()->right()->right_.release();
@@ -71,9 +76,9 @@ public:
         }
         else { std::cerr << "WTF!?: Left case but not left-left or left-right." << std::endl; exit(10); }
       }
-      else if( current->get()->left()->height() - current->get()->right()->height() == -2 )  //Right
+      else if( height_helper( current->get()->left() ) - height_helper( current->get()->right() ) == -2 )  //Right
       {
-        if( current->get()->right()->left()->height() - current->get()->right()->right()->height() == -1 ) {  //Right-Right
+        if( height_helper( current->get()->right()->left() ) - height_helper( current->get()->right()->right() ) == -1 ) {  //Right-Right
           branches[0] = current->get()->left_.release();
           branches[1] = current->get()->right()->left_.release();
           branches[2] = current->get()->right()->right()->left_.release();
@@ -82,7 +87,7 @@ public:
           nodes[1] = current->get()->right_.release();
           nodes[0] = current->release();
         }
-        else if( current->get()->right()->left()->height() - current->get()->right()->right()->height() == 1 ) {  //Right-Left
+        else if( height_helper( current->get()->right()->left() ) - height_helper( current->get()->right()->right() ) == 1 ) {  //Right-Left
           branches[0] = current->get()->left_.release();
           branches[1] = current->get()->right()->left()->left_.release();
           branches[2] = current->get()->right()->left()->right_.release();
@@ -116,7 +121,7 @@ public:
 private:
   std::unique_ptr<Node> root_;
   int size_;
-
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 public:
   AVLTree() : size_(0) {}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -138,13 +143,14 @@ public:
     ++size_;
 
     // Now recalculate heights and balance
+    Value &value_ref_holder = cur->get()->value_;
     while( !prev_parents.empty() ){
       prev_parents.top()->get()->recalc_height();
       Node::balance( prev_parents.top() );
       prev_parents.pop();
     }
 
-    return (*this)[key];
+    return value_ref_holder;
   }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   int size() {
@@ -155,38 +161,21 @@ public:
     return root_.get();
   }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-  void print() { print( this->root() , 0 ); }
+  void print() { print( this->root() ); }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 private:
-  void print( Node* current, int indent_level ) {
+  void print( Node* current, int indent_level=0 ) {
     if( current == NULL ) return;
 
     print( current->right(), indent_level + 1 );
+
     for(int k = 0; k < indent_level; k++)
       std::cout << "    ";
-    std::cout << "{ " << current->key_ << "," << current->height() << " }" << std::endl;
+    std::cout << "{ " << current->key_ << "," << current->value_ << "," << current->height() << " }" << std::endl;
 
     print( current->left() , indent_level + 1 ); 
-  }
-  
+  }  
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-private:  // testing methods
-  void force_balance() {
-    force_balance(&this->root_);
-    force_calc_height( this->root() );
-  }
-  void force_balance( std::unique_ptr<Node>* head ) {
-    if( !head->get() ) return;
-    force_balance( &head->get()->left_ );
-    force_balance( &head->get()->right_ );
-    Node::balance( head );
-  }
-  void force_calc_height( Node* head ) {
-    if(!head) return;
-    force_calc_height( head->left() ); 
-    force_calc_height( head->right() );
-    head->recalc_height(); 
-  }
 };
 
 #endif
