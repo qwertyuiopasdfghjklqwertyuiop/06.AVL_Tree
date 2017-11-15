@@ -48,11 +48,13 @@ public:
   
   
   Value& operator[](const Key& key) {
+    std::stack< std::unique_ptr<Node> > prev_parents;
     // Try to find the node with the value we want:
     std::unique_ptr<Node> *cur;
     for (cur = &root_;
          cur->get() != nullptr;
          cur = key < (*cur)->key_ ? &(*cur)->left_ : &(*cur)->right_) {
+      prev_parents.push(cur);
       if (key == (*cur)->key_) {
         return (*cur)->value_;
       }
@@ -61,6 +63,10 @@ public:
     // (This is the same behaviour as an std::map.)
     cur->reset(new Node(key));
     ++size_;
+    while( !prev_parents.empty() ){
+      prev_parents->top()->get()->NAME_OF_RECALC_HEIGHT_FUNCTION(); // TODO $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+      prev_parents->pop();
+    }
     return (*cur)->value_;
   }
 
