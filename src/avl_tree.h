@@ -1,6 +1,7 @@
 #ifndef _AVL_TREE_H
 #define _AVL_TREE_H
 
+#include <iostream>
 #include <memory>
 #include <stack>
 
@@ -33,7 +34,7 @@ public:
     }
     const int height() const {
       if(this == NULL) return -1;
-      return height_;
+      return this->height_;
     }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   private:
@@ -41,11 +42,11 @@ public:
       this->height_ = 1 + std::max( this->left()->height() , this->right()->height() );
     }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-  public:
     static bool balance( std::unique_ptr<Node>* current ) {
       /* arrays for node and branches go from least to greatest. eg: *nodes[0] < *nodes[1] < *nodes[2]
           Values are assigned in one of the 4 blocks of code or cases below.  They are then reattached
           and the height_ values are updated. */
+
       Node* nodes[3];
       Node* branches[4];
       if( current->get()->left()->height() - current->get()->right()->height() == 2 )   //Left
@@ -68,7 +69,7 @@ public:
           nodes[0] = current->get()->left_.release();
           nodes[2] = current->release();
         }
-        else { std::cerr << "WTF!?: Left case but not left-left or left-right." << std::endl; exit(1); }
+        else { std::cerr << "WTF!?: Left case but not left-left or left-right." << std::endl; exit(10); }
       }
       else if( current->get()->left()->height() - current->get()->right()->height() == -2 )  //Right
       {
@@ -90,7 +91,7 @@ public:
           nodes[2] = current->get()->right_.release();
           nodes[0] = current->release();
         }
-        else { std::cerr << "WTF!?: Right case but not right-right or right-left." << std::endl; exit(2); }
+        else { std::cerr << "WTF!?: Right case but not right-right or right-left." << std::endl; exit(11); }
       }
       else return false; // doesn't need to be balanced or it's child should be balanced first
   
@@ -163,11 +164,30 @@ private:
     print( current->right(), indent_level + 1 );
     for(int k = 0; k < indent_level; k++)
       std::cout << "    ";
-    //std::cout << "{ " << current->key_ <<  "," << current->value_ << "," << current->height() << " }" << std::endl;
-    std::cout << "{ " << current->value_ << "," << current->height() << " }" << std::endl;
+    std::cout << "{ " << current->key_ << "," << current->height() << " }" << std::endl;
 
     print( current->left() , indent_level + 1 ); 
+  }
+  
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+private:  // testing methods
+  void force_balance() {
+    force_balance(&this->root_);
+    force_calc_height( this->root() );
+  }
+  void force_balance( std::unique_ptr<Node>* head ) {
+    if( !head->get() ) return;
+    force_balance( &head->get()->left_ );
+    force_balance( &head->get()->right_ );
+    Node::balance( head );
+  }
+  void force_calc_height( Node* head ) {
+    if(!head) return;
+    force_calc_height( head->left() ); 
+    force_calc_height( head->right() );
+    head->recalc_height(); 
   }
 };
 
 #endif
+
